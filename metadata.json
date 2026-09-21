@@ -1,0 +1,7 @@
+{
+  "name": "Don't Starve Together Guide & Console",
+  "description": "Panduan lengkap bermain Don't Starve Together dari tingkat pemula, menengah, hingga ahli, dilengkapi resep Crock Pot, kiting boss, dan referensi perintah konsol bahasa Indonesia.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
