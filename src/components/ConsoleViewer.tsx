@@ -1,12 +1,17 @@
 import React, { useState } from 'react';
-import { Copy, Check, Terminal, AlertTriangle, Info, HelpCircle, Star, ShieldAlert } from 'lucide-react';
-import { CommandCategory } from '../types';
+import { Copy, Check, HelpCircle, Star, Info, Terminal, AlertCircle } from 'lucide-react';
+import { CommandCategory, CommandItem } from '../types';
 
 interface ConsoleViewerProps {
   categories: CommandCategory[];
   searchQuery: string;
   favorites: string[];
   toggleFavorite: (id: string) => void;
+}
+
+interface ToastState {
+  code: string;
+  title: string;
 }
 
 export const ConsoleViewer: React.FC<ConsoleViewerProps> = ({
@@ -18,16 +23,23 @@ export const ConsoleViewer: React.FC<ConsoleViewerProps> = ({
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [showHowTo, setShowHowTo] = useState<boolean>(false);
+  const [toast, setToast] = useState<ToastState | null>(null);
 
-  const handleCopy = (code: string, id: string) => {
+  const handleCopy = (code: string, id: string, title: string) => {
     navigator.clipboard.writeText(code).then(() => {
       setCopiedId(id);
-      setTimeout(() => setCopiedId(null), 1800);
+      setToast({ code, title });
+      setTimeout(() => setCopiedId(null), 2000);
+      setTimeout(() => setToast(null), 2500);
+    }).catch(() => {
+      // Fallback
     });
   };
 
   // Flatten and filter commands
-  const allCommands = categories.flatMap(cat => cat.commands.map(cmd => ({ ...cmd, categoryName: cat.title })));
+  const allCommands: (CommandItem & { categoryName: string })[] = categories.flatMap(cat => 
+    cat.commands.map(cmd => ({ ...cmd, categoryName: cat.title }))
+  );
 
   const filteredCommands = allCommands.filter(cmd => {
     // Category filter
@@ -51,7 +63,29 @@ export const ConsoleViewer: React.FC<ConsoleViewerProps> = ({
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      {/* Toast Notification Floating Banner */}
+      {toast && (
+        <div 
+          role="status"
+          aria-live="polite"
+          className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 rounded-xl border border-[#238636] bg-[#0e2112]/95 px-4 py-3 text-xs sm:text-sm text-[#c8eed0] shadow-2xl backdrop-blur-md transition-all duration-300 pointer-events-none"
+        >
+          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#238636] text-white">
+            <Check className="h-4 w-4 stroke-[3]" />
+          </div>
+          <div>
+            <div className="font-bold text-[#7ee787] flex items-center gap-1.5">
+              <span>Perintah Konsol Berhasil Disalin!</span>
+              <span className="text-[11px] font-mono text-[#98d5a1]">({toast.title})</span>
+            </div>
+            <div className="mt-0.5 max-w-xs sm:max-w-md truncate font-mono text-[11px] text-[#e0f5e3]">
+              {toast.code}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* How to activate console banner / toggle */}
       <div className="rounded-xl border border-[#3d3322] bg-[#1d1811] p-4 sm:p-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -64,15 +98,15 @@ export const ConsoleViewer: React.FC<ConsoleViewerProps> = ({
                 Cara Mengaktifkan &amp; Menggunakan Konsol di Game
               </h2>
               <p className="text-xs text-[#a69b82]">
-                Tekan tombol <kbd className="rounded bg-[#2b2216] px-1.5 py-0.5 font-mono text-[#d4af37] border border-[#423522]">~</kbd> (Backtick) saat bermain untuk membuka kotak konsol.
+                Tekan tombol <kbd className="rounded bg-[#2b2216] px-1.5 py-0.5 font-mono text-[#d4af37] border border-[#423522]">~</kbd> (Backtick) saat bermain untuk membuka kotak konsol. Klik perintah apa pun di bawah untuk langsung menyalin.
               </p>
             </div>
           </div>
           <button
             onClick={() => setShowHowTo(!showHowTo)}
-            className="rounded-lg border border-[#3e3220] bg-[#261f14] px-3 py-1.5 text-xs font-medium text-[#d4af37] hover:bg-[#30271a] self-start sm:self-auto"
+            className="rounded-lg border border-[#3e3220] bg-[#261f14] px-3 py-1.5 text-xs font-medium text-[#d4af37] hover:bg-[#30271a] self-start sm:self-auto transition-colors"
           >
-            {showHowTo ? 'Sembunyikan Panduan INI' : 'Lihat Lokasi File Settings.ini'}
+            {showHowTo ? 'Sembunyikan Panduan Ini' : 'Lihat Lokasi File Settings.ini'}
           </button>
         </div>
 
@@ -104,13 +138,22 @@ export const ConsoleViewer: React.FC<ConsoleViewerProps> = ({
         )}
       </div>
 
+      {/* Copy Prompt banner */}
+      <div className="flex items-center gap-2 rounded-lg border border-[#3b301e] bg-[#17130b] px-3.5 py-2 text-xs text-[#b8ab91]">
+        <Terminal className="h-4 w-4 text-[#d4af37] flex-shrink-0" />
+        <span>
+          <strong className="text-[#f5ebd3]">Fitur Cepat: </strong> 
+          Cukup klik pada kartu atau baris kode perintah mana pun untuk langsung menyalin perintah ke clipboard dengan notifikasi otomatis!
+        </span>
+      </div>
+
       {/* Category Filter Pills */}
       <div className="flex flex-wrap items-center gap-1.5">
         <button
           onClick={() => setSelectedCategory('all')}
           className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
             selectedCategory === 'all'
-              ? 'bg-[#d4af37] text-[#16120b] font-semibold'
+              ? 'bg-[#d4af37] text-[#16120b] font-semibold shadow-sm'
               : 'border border-[#382d1c] bg-[#1a1610] text-[#a89d84] hover:bg-[#261f14] hover:text-[#ece4d0]'
           }`}
         >
@@ -122,7 +165,7 @@ export const ConsoleViewer: React.FC<ConsoleViewerProps> = ({
             onClick={() => setSelectedCategory(cat.id)}
             className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
               selectedCategory === cat.id
-                ? 'bg-[#d4af37] text-[#16120b] font-semibold'
+                ? 'bg-[#d4af37] text-[#16120b] font-semibold shadow-sm'
                 : 'border border-[#382d1c] bg-[#1a1610] text-[#a89d84] hover:bg-[#261f14] hover:text-[#ece4d0]'
             }`}
           >
@@ -134,7 +177,8 @@ export const ConsoleViewer: React.FC<ConsoleViewerProps> = ({
       {/* Commands List */}
       {filteredCommands.length === 0 ? (
         <div className="rounded-xl border border-[#332b1e] bg-[#1a1610] p-10 text-center text-[#9c917b]">
-          <p className="text-base font-medium">Tidak ada perintah yang sesuai dengan kata kunci "{searchQuery}".</p>
+          <AlertCircle className="mx-auto h-8 w-8 text-[#66543b] mb-2" />
+          <p className="text-base font-medium text-[#f0e5cf]">Tidak ada perintah yang sesuai dengan kata kunci "{searchQuery}".</p>
           <p className="mt-1 text-sm text-[#736855]">Coba cari nama fungsi seperti c_spawn, godmode, rollback, dll.</p>
         </div>
       ) : (
@@ -146,14 +190,21 @@ export const ConsoleViewer: React.FC<ConsoleViewerProps> = ({
             return (
               <div
                 key={cmd.id}
-                className="group rounded-xl border border-[#302719] bg-[#1b1610] p-4 sm:p-5 transition-all hover:border-[#4a3b25] hover:bg-[#1f1a12]"
+                className={`group rounded-xl border p-4 sm:p-5 transition-all ${
+                  isCopied
+                    ? 'border-[#238636] bg-[#142316]/60 ring-1 ring-[#238636]/60 shadow-lg'
+                    : 'border-[#302719] bg-[#1b1610] hover:border-[#4a3b25] hover:bg-[#1f1a12]'
+                }`}
               >
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                  <div>
+                  <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <h3 className="font-sans font-semibold text-base text-[#f2ead2]">
                         {cmd.title}
                       </h3>
+                      <span className="rounded bg-[#282115] px-2 py-0.5 font-mono text-[10px] text-[#d4af37] border border-[#3d311e]">
+                        {cmd.categoryName.split('(')[0].trim()}
+                      </span>
                       {cmd.isDestructive && (
                         <span className="rounded bg-[#3b1717] px-1.5 py-0.5 font-mono text-[10px] text-[#f87171] border border-[#c45a4a]/40">
                           Hati-hati
@@ -167,7 +218,10 @@ export const ConsoleViewer: React.FC<ConsoleViewerProps> = ({
 
                   <div className="flex items-center gap-2 self-end sm:self-start">
                     <button
-                      onClick={() => toggleFavorite(cmd.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleFavorite(cmd.id);
+                      }}
                       title={isFav ? "Hapus dari favorit" : "Tambah ke favorit"}
                       className={`rounded-lg border p-2 transition-colors ${
                         isFav
@@ -178,7 +232,7 @@ export const ConsoleViewer: React.FC<ConsoleViewerProps> = ({
                       <Star className={`h-4 w-4 ${isFav ? 'fill-current' : ''}`} />
                     </button>
                     <button
-                      onClick={() => handleCopy(cmd.code, cmd.id)}
+                      onClick={() => handleCopy(cmd.code, cmd.id, cmd.title)}
                       className={`flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold transition-all ${
                         isCopied
                           ? 'border-[#238636] bg-[#17331b] text-[#7ee787]'
@@ -186,14 +240,37 @@ export const ConsoleViewer: React.FC<ConsoleViewerProps> = ({
                       }`}
                     >
                       {isCopied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                      <span>{isCopied ? 'Tersalin!' : 'Salin Kode'}</span>
+                      <span>{isCopied ? 'Tersalin!' : 'Salin Perintah'}</span>
                     </button>
                   </div>
                 </div>
 
-                {/* Code Box */}
-                <div className="relative mt-3 rounded-lg border border-[#2d2417] bg-[#0f0d09] p-3">
-                  <pre className="overflow-x-auto font-mono text-xs sm:text-sm text-[#f0e3ae] leading-relaxed">
+                {/* Clickable Code Box with Toast feedback */}
+                <div 
+                  onClick={() => handleCopy(cmd.code, cmd.id, cmd.title)}
+                  title="Klik untuk menyalin perintah ini ke clipboard"
+                  className="relative mt-3 rounded-lg border border-[#2d2417] bg-[#0e0c08] p-3 cursor-pointer group/code hover:border-[#d4af37]/60 hover:bg-[#13100a] transition-all"
+                >
+                  <div className="flex items-center justify-between mb-1.5 text-[10px] font-mono text-[#8a7e67] border-b border-[#211a10] pb-1">
+                    <span className="flex items-center gap-1 text-[#d4af37]">
+                      <Terminal className="h-3 w-3" />
+                      Konsol Lua (Klik untuk Salin)
+                    </span>
+                    <span className="opacity-75 group-hover/code:text-[#7ee787] flex items-center gap-1">
+                      {isCopied ? (
+                        <>
+                          <Check className="h-3 w-3 text-[#7ee787]" />
+                          <span className="text-[#7ee787] font-bold">Tersalin!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-3 w-3" />
+                          <span>Klik untuk Copy</span>
+                        </>
+                      )}
+                    </span>
+                  </div>
+                  <pre className="overflow-x-auto font-mono text-xs sm:text-sm text-[#f0e3ae] leading-relaxed selection:bg-[#c9a227] selection:text-[#12100c]">
                     <code>{cmd.code}</code>
                   </pre>
                 </div>

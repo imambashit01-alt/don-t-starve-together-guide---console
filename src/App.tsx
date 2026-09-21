@@ -5,18 +5,23 @@ import { ConsoleViewer } from './components/ConsoleViewer';
 import { CrockpotViewer } from './components/CrockpotViewer';
 import { KitingViewer } from './components/KitingViewer';
 import { FavoritesViewer } from './components/FavoritesViewer';
+import { BiomesViewer } from './components/BiomesViewer';
+import { CraftingTreeViewer } from './components/CraftingTreeViewer';
+import { CharactersViewer } from './components/CharactersViewer';
+import { EarlyGameChecklist } from './components/EarlyGameChecklist';
 import { GUIDES_DATA } from './data/guidesData';
 import { COMMANDS_DATA } from './data/commandsData';
 import { CROCKPOT_RECIPES } from './data/crockpotData';
 import { KITING_DATA } from './data/kitingData';
 import { MainTab, GuideLevel } from './types';
-import { ArrowUp, Flame, BookOpen, UtensilsCrossed, Swords, Terminal } from 'lucide-react';
+import { ArrowUp, Flame, CheckSquare, X } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<MainTab>('guide');
   const [guideLevel, setGuideLevel] = useState<GuideLevel>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [showScrollTop, setShowScrollTop] = useState<boolean>(false);
+  const [showChecklistModal, setShowChecklistModal] = useState<boolean>(false);
 
   // Favorites state persisted to localStorage
   const [favorites, setFavorites] = useState<string[]>(() => {
@@ -74,17 +79,71 @@ export default function App() {
         guideLevel={guideLevel}
         setGuideLevel={setGuideLevel}
         favoriteCount={favorites.length}
+        showChecklistModal={showChecklistModal}
+        setShowChecklistModal={setShowChecklistModal}
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-6 md:px-8 md:py-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-6 md:px-8 md:py-8 space-y-6">
+        {/* Toggleable Early Game Checklist Banner or Modal view */}
+        {showChecklistModal && (
+          <div className="relative animate-in fade-in duration-200">
+            <EarlyGameChecklist onClose={() => setShowChecklistModal(false)} />
+          </div>
+        )}
+
         {activeTab === 'guide' && (
-          <GuideViewer
-            guides={GUIDES_DATA}
-            guideLevel={guideLevel}
+          <div className="space-y-6">
+            {!showChecklistModal && (
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-[#3d311e] bg-gradient-to-r from-[#1c160e] to-[#16120b] p-3.5 sm:p-4 text-xs text-[#dcd1b8]">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#271d10] text-[#facc15] border border-[#4d3a20]">
+                    <CheckSquare className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-serif font-bold text-[#f5ebd3] text-sm">
+                      Checklist Survival Awal Pemula (Day 1–20)
+                    </h4>
+                    <p className="text-[#a4977f]">
+                      Temukan lokasi base strategis, buat tas punggung (backpack), dan racik Crock Pot sebelum musim dingin tiba.
+                    </p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setShowChecklistModal(true)}
+                  className="rounded-lg border border-[#d4af37]/60 bg-[#2b2112] px-3 py-1.5 font-bold text-[#f5ebd3] hover:bg-[#382b18] transition-all self-start sm:self-auto shadow-sm"
+                >
+                  Buka Checklist Interaktif
+                </button>
+              </div>
+            )}
+
+            <GuideViewer
+              guides={GUIDES_DATA}
+              guideLevel={guideLevel}
+              searchQuery={searchQuery}
+              favorites={favorites}
+              toggleFavorite={toggleFavorite}
+            />
+          </div>
+        )}
+
+        {activeTab === 'characters' && (
+          <CharactersViewer
             searchQuery={searchQuery}
-            favorites={favorites}
-            toggleFavorite={toggleFavorite}
+          />
+        )}
+
+        {activeTab === 'biomes' && (
+          <BiomesViewer
+            searchQuery={searchQuery}
+          />
+        )}
+
+        {activeTab === 'crafting' && (
+          <CraftingTreeViewer
+            searchQuery={searchQuery}
           />
         )}
 

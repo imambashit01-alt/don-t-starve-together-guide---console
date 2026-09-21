@@ -1,5 +1,8 @@
 import React from 'react';
-import { Flame, Search, BookOpen, UtensilsCrossed, Swords, Terminal, Star, Sparkles } from 'lucide-react';
+import { 
+  Flame, Search, BookOpen, UtensilsCrossed, Swords, 
+  Terminal, Star, Compass, Layers, Users, CheckSquare 
+} from 'lucide-react';
 import { MainTab, GuideLevel } from '../types';
 
 interface HeaderProps {
@@ -10,6 +13,8 @@ interface HeaderProps {
   guideLevel: GuideLevel;
   setGuideLevel: (level: GuideLevel) => void;
   favoriteCount: number;
+  showChecklistModal?: boolean;
+  setShowChecklistModal?: (show: boolean) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -20,11 +25,13 @@ export const Header: React.FC<HeaderProps> = ({
   guideLevel,
   setGuideLevel,
   favoriteCount,
+  showChecklistModal,
+  setShowChecklistModal,
 }) => {
   return (
-    <header className="border-b border-[#2e261a] bg-gradient-to-b from-[#1b1711] to-[#14110c] px-4 py-6 md:px-8">
+    <header className="border-b border-[#2e261a] bg-gradient-to-b from-[#1b1711] to-[#14110c] px-4 py-5 md:px-8">
       <div className="mx-auto max-w-7xl">
-        {/* Top bar with title and aesthetics */}
+        {/* Top bar with title and search */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div className="flex items-center gap-3.5">
             <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-[#4a3d28] bg-[#221c13] shadow-md shadow-black/40 text-[#d4af37]">
@@ -40,40 +47,57 @@ export const Header: React.FC<HeaderProps> = ({
                 </span>
               </div>
               <p className="text-xs md:text-sm text-[#a89d84]">
-                Panduan Komprehensif Pemula • Menengah • Ahli &amp; Referensi Perintah Konsol
+                Panduan Komprehensif Survival • Bioma • Karakter • Pohon Sains • Resep Masak &amp; Konsol
               </p>
             </div>
           </div>
 
-          {/* Quick Search Input */}
-          <div className="relative w-full md:w-80">
-            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8c8069]" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Cari panduan, bos, resep, command..."
-              className="w-full rounded-lg border border-[#3d3322] bg-[#1a150e] py-2 pl-9 pr-8 text-sm text-[#ece4d0] placeholder-[#7d715a] outline-none transition-colors focus:border-[#c9a227] focus:ring-1 focus:ring-[#c9a227]"
-            />
-            {searchQuery && (
+          {/* Quick Action & Search Bar */}
+          <div className="flex items-center gap-2.5 w-full md:w-auto">
+            {setShowChecklistModal && (
               <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-[#8c8069] hover:text-[#ece4d0]"
+                onClick={() => setShowChecklistModal(!showChecklistModal)}
+                className={`flex items-center gap-1.5 rounded-lg border px-3 py-2 text-xs font-semibold transition-all whitespace-nowrap ${
+                  showChecklistModal
+                    ? 'border-[#facc15] bg-[#2d2413] text-[#facc15]'
+                    : 'border-[#3d3322] bg-[#1a150e] text-[#d4af37] hover:bg-[#251e13]'
+                }`}
+                title="Buka Checklist Misi Awal Pemula (Day 1-20)"
               >
-                ✕
+                <CheckSquare className="h-4 w-4 text-[#e5a93c]" />
+                <span className="hidden sm:inline">Checklist</span> Pemula
               </button>
             )}
+
+            <div className="relative w-full md:w-80">
+              <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8c8069]" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Cari karakter, bioma, pohon riset, resep..."
+                className="w-full rounded-lg border border-[#3d3322] bg-[#1a150e] py-2 pl-9 pr-8 text-sm text-[#ece4d0] placeholder-[#7d715a] outline-none transition-colors focus:border-[#c9a227] focus:ring-1 focus:ring-[#c9a227]"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-[#8c8069] hover:text-[#ece4d0]"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-[#2a2217] pt-4">
-          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+        {/* Navigation Tabs Bar */}
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-[#2a2217] pt-3.5">
+          <nav className="flex flex-wrap items-center gap-1.5 sm:gap-2">
             <button
               onClick={() => setActiveTab('guide')}
-              className={`flex items-center gap-2 rounded-md px-3.5 py-2 text-sm font-medium transition-all ${
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs sm:text-sm font-medium transition-all ${
                 activeTab === 'guide'
-                  ? 'border border-[#d4af37]/40 bg-[#2b2316] text-[#f5ebd3] shadow-sm'
+                  ? 'border border-[#d4af37]/40 bg-[#2b2316] text-[#f5ebd3] shadow-sm font-semibold'
                   : 'text-[#a69a81] hover:bg-[#1f1911] hover:text-[#ece4d0]'
               }`}
             >
@@ -82,22 +106,58 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
 
             <button
+              onClick={() => setActiveTab('characters')}
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs sm:text-sm font-medium transition-all ${
+                activeTab === 'characters'
+                  ? 'border border-[#d4af37]/40 bg-[#2b2316] text-[#f5ebd3] shadow-sm font-semibold'
+                  : 'text-[#a69a81] hover:bg-[#1f1911] hover:text-[#ece4d0]'
+              }`}
+            >
+              <Users className="h-4 w-4 text-[#38bdf8]" />
+              <span>Karakter DST</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('biomes')}
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs sm:text-sm font-medium transition-all ${
+                activeTab === 'biomes'
+                  ? 'border border-[#d4af37]/40 bg-[#2b2316] text-[#f5ebd3] shadow-sm font-semibold'
+                  : 'text-[#a69a81] hover:bg-[#1f1911] hover:text-[#ece4d0]'
+              }`}
+            >
+              <Compass className="h-4 w-4 text-[#22c55e]" />
+              <span>Bioma &amp; Ekologi</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('crafting')}
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs sm:text-sm font-medium transition-all ${
+                activeTab === 'crafting'
+                  ? 'border border-[#d4af37]/40 bg-[#2b2316] text-[#f5ebd3] shadow-sm font-semibold'
+                  : 'text-[#a69a81] hover:bg-[#1f1911] hover:text-[#ece4d0]'
+              }`}
+            >
+              <Layers className="h-4 w-4 text-[#facc15]" />
+              <span>Pohon Riset (Crafting)</span>
+            </button>
+
+            <button
               onClick={() => setActiveTab('crockpot')}
-              className={`flex items-center gap-2 rounded-md px-3.5 py-2 text-sm font-medium transition-all ${
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs sm:text-sm font-medium transition-all ${
                 activeTab === 'crockpot'
-                  ? 'border border-[#d4af37]/40 bg-[#2b2316] text-[#f5ebd3] shadow-sm'
+                  ? 'border border-[#d4af37]/40 bg-[#2b2316] text-[#f5ebd3] shadow-sm font-semibold'
                   : 'text-[#a69a81] hover:bg-[#1f1911] hover:text-[#ece4d0]'
               }`}
             >
               <UtensilsCrossed className="h-4 w-4 text-[#e5a93c]" />
-              <span>Resep Crock Pot</span>
+              <span>Crock Pot</span>
             </button>
 
             <button
               onClick={() => setActiveTab('kiting')}
-              className={`flex items-center gap-2 rounded-md px-3.5 py-2 text-sm font-medium transition-all ${
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs sm:text-sm font-medium transition-all ${
                 activeTab === 'kiting'
-                  ? 'border border-[#d4af37]/40 bg-[#2b2316] text-[#f5ebd3] shadow-sm'
+                  ? 'border border-[#d4af37]/40 bg-[#2b2316] text-[#f5ebd3] shadow-sm font-semibold'
                   : 'text-[#a69a81] hover:bg-[#1f1911] hover:text-[#ece4d0]'
               }`}
             >
@@ -107,9 +167,9 @@ export const Header: React.FC<HeaderProps> = ({
 
             <button
               onClick={() => setActiveTab('commands')}
-              className={`flex items-center gap-2 rounded-md px-3.5 py-2 text-sm font-medium transition-all ${
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs sm:text-sm font-medium transition-all ${
                 activeTab === 'commands'
-                  ? 'border border-[#d4af37]/40 bg-[#2b2316] text-[#f5ebd3] shadow-sm'
+                  ? 'border border-[#d4af37]/40 bg-[#2b2316] text-[#f5ebd3] shadow-sm font-semibold'
                   : 'text-[#a69a81] hover:bg-[#1f1911] hover:text-[#ece4d0]'
               }`}
             >
@@ -119,21 +179,21 @@ export const Header: React.FC<HeaderProps> = ({
 
             <button
               onClick={() => setActiveTab('favorites')}
-              className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-all ${
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs sm:text-sm font-medium transition-all ${
                 activeTab === 'favorites'
-                  ? 'border border-[#d4af37]/40 bg-[#2b2316] text-[#f5ebd3] shadow-sm'
+                  ? 'border border-[#d4af37]/40 bg-[#2b2316] text-[#f5ebd3] shadow-sm font-semibold'
                   : 'text-[#a69a81] hover:bg-[#1f1911] hover:text-[#ece4d0]'
               }`}
             >
               <Star className="h-4 w-4 text-[#facc15]" />
               <span>Favorit</span>
               {favoriteCount > 0 && (
-                <span className="rounded-full bg-[#d4af37]/20 px-1.5 py-0.2 text-xs font-semibold text-[#facc15]">
+                <span className="rounded-full bg-[#d4af37]/20 px-1.5 py-0.2 text-[10px] font-semibold text-[#facc15]">
                   {favoriteCount}
                 </span>
               )}
             </button>
-          </div>
+          </nav>
 
           {/* Sub-level pills when on Guide tab */}
           {activeTab === 'guide' && (
