@@ -1,13 +1,31 @@
 export type GuideLevel = 'all' | 'pemula' | 'menengah' | 'ahli';
 
+export type GuideTopic = 
+  | 'all'
+  | 'eksplorasi'
+  | 'musim'
+  | 'combat'
+  | 'farming'
+  | 'caves'
+  | 'karakter'
+  | 'magic'
+  | 'endgame';
+
 export type MainTab = 'guide' | 'crockpot' | 'kiting' | 'commands' | 'favorites';
+
+export interface GuideChecklistItem {
+  id: string;
+  label: string;
+}
 
 export interface GuideSection {
   id: string;
   level: 'pemula' | 'menengah' | 'ahli';
+  topic?: GuideTopic;
   title: string;
   subtitle: string;
   estimatedDays?: string;
+  readTime?: string;
   iconName: string;
   overview: string;
   keyPoints: {
@@ -19,6 +37,8 @@ export interface GuideSection {
     items?: string[];
   }[];
   recommendedItems?: string[];
+  checklist?: GuideChecklistItem[];
+  quickSummary?: string;
 }
 
 export interface CommandItem {
